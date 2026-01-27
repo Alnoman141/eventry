@@ -1,7 +1,8 @@
 "use server"
 
-import { createNewUser, getUserByCredentials } from "@/queries/index"
+import { createNewUser, getUserByCredentials, updateEventInterest } from "@/queries/index"
 import { redirect } from "next/navigation"
+import { revalidatePath } from "next/cache"
 
 export async function registerNewUser(formData) {
   const data = Object.fromEntries(formData)
@@ -11,15 +12,29 @@ export async function registerNewUser(formData) {
 }
 
 export async function loginUser(formData) {
-  const credentials = {}
-  credentials.email = formData.get("email")
-  credentials.password = formData.get("password")
+  try {
+    const credentials = {}
+    credentials.email = formData.get("email")
+    credentials.password = formData.get("password")
 
-  const user = await getUserByCredentials(credentials)
+    const user = await getUserByCredentials(credentials)
 
-  if (user) {
-    redirect("/")
-  } else {
-    throw new Error(`The user with email ${credentials.email} was not found.`)
+    if (user) {
+      // Set a cookie or session here as needed
+      return user
+    }
+
+  } catch (error) {
+    throw error
   }
+}
+
+export const updateInterestedEvent = async (eventId, authId) => {
+  try {
+    await updateEventInterest(eventId, authId)
+  } catch (error) {
+    throw error
+  }
+  
+  revalidatePath("/")
 }

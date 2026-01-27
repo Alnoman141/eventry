@@ -28,7 +28,7 @@ export default function HeroSection({ event }) {
           </div>
         </div>
 
-        <ActionButtons fromDetails={true} />
+        <ActionButtons fromDetails={true} eventId={event.id} interestedIds={event.interested_ids} />
       </div>
     </section>
   )

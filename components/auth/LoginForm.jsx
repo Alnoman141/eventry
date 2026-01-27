@@ -2,16 +2,30 @@
 
 import { useState } from "react"
 import { loginUser } from "@/app/actions"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/app/hooks/useAuth"
 
 export default function LoginForm() {
   const [error, setError] = useState(null)
+  const { setAuth } = useAuth()
+  const router = useRouter()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
 
       const formData = new FormData(e.currentTarget)
-      await loginUser(formData)
+      const authUser = await loginUser(formData)
+
+      if (authUser) {
+        setAuth(authUser)
+        
+        router.push("/")
+      } else {
+        setError("Invalid email or password")
+      }
+
+
     } catch (error) {
       setError(error.message)
     }

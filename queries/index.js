@@ -4,6 +4,7 @@ import {
   replaceMongoIdInArray,
   replaceMongoIdInObject,
 } from "@/utils/data-util"
+import mongoose from "mongoose"
 
 export const getAllEvents = async () => {
   try {
@@ -29,7 +30,7 @@ export const getEventById = async (id) => {
 export const createNewUser = async (userData) => {
   try {
     const newUser = await userModel.create(userData)
-    return newUser;
+    return newUser
   } catch (error) {
     console.error("Error creating new user:", error)
   }
@@ -37,13 +38,35 @@ export const createNewUser = async (userData) => {
 
 export const getUserByCredentials = async (formData) => {
   try {
-    const user = await userModel.findOne({
-      email: formData.email,
-      password: formData.password,
-    }).lean()
+    const user = await userModel
+      .findOne({
+        email: formData.email,
+        password: formData.password,
+      })
+      .lean()
 
-    return user;
+    if (user) {
+      return replaceMongoIdInObject(user)
+    }
+
+    return null
   } catch (error) {
     console.error("Error fetching user by credentials:", error)
+  }
+}
+
+export const updateEventInterest = async (eventId, authId) => {
+  const event = await eventModel.findById(eventId)
+
+  if (event) {
+    const user = event.interested_ids.find((id) => id.toString() === authId)
+
+    if (user) {
+      event.interested_ids.pull(new mongoose.Types.ObjectId(authId))
+    } else {
+      event.interested_ids.push(new mongoose.Types.ObjectId(authId))
+    }
+
+     await event.save()
   }
 }
