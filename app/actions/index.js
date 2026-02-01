@@ -1,8 +1,11 @@
 "use server"
 
-import { createNewUser, getUserByCredentials, updateEventInterest } from "@/queries/index"
+import { render } from "@react-email/render";
+import { createNewUser, getUserByCredentials, updateEventInterest, updateGoingEvent, getEventById } from "@/queries/index"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
+import { Resend } from "resend"
+import EmailTemplate from "@/components/payment/EmailTemplate"
 
 export async function registerNewUser(formData) {
   const data = Object.fromEntries(formData)
@@ -37,4 +40,39 @@ export const updateInterestedEvent = async (eventId, authId) => {
   }
   
   revalidatePath("/")
+}
+
+export const addGoingEvent = async (eventId, authUser) => {
+  try {
+    await updateGoingEvent(eventId, authUser?.id)
+    await sendEmail(eventId, authUser)
+  } catch (error) {
+    throw error
+  }
+
+  revalidatePath("/")
+  redirect("/")
+}
+
+export const sendEmail = async (eventId, authUser) => {
+  try {
+    const event = await getEventById(eventId)
+
+    if (event) {
+      const resend = new Resend(process.env.RESEND_API_KEY)
+      const message = `Dear ${authUser.name},\n\nThank you for registering for ${event.name}!\n\nEvent Details:\nLocation: ${event.location}\nDate & Time: ${new Date(event.date).toLocaleString()}\n\nWe look forward to seeing you there!\n\nBest regards,\nEventry Team`
+
+      // const html = render(<EmailTemplate message={message} />);
+
+      const send = await resend.emails.send({
+        from: "onboarding@resend.dev",
+        to: authUser?.email,
+        subject: `Registration Confirmation for ${event.name}`,
+        text: message,
+      })
+    }
+
+  } catch (error) {
+    throw error
+  }
 }

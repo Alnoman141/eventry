@@ -67,6 +67,15 @@ export const updateEventInterest = async (eventId, authId) => {
       event.interested_ids.push(new mongoose.Types.ObjectId(authId))
     }
 
-     await event.save()
+    await event.save()
+  }
+}
+
+export const updateGoingEvent = async (eventId, authId) => {
+  const event = await eventModel.findById(eventId)
+
+  if (event) {
+    event.going_ids.push(new mongoose.Types.ObjectId(authId))
+    await event.save()
   }
 }
