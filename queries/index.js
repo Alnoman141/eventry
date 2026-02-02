@@ -6,9 +6,17 @@ import {
 } from "@/utils/data-util"
 import mongoose from "mongoose"
 
-export const getAllEvents = async () => {
+export const getAllEvents = async (query) => {
   try {
-    const events = await eventModel.find().lean()
+    let events = []
+
+    if (query) {
+      const regex = new RegExp(query, "i")
+      events = await eventModel.find({ name: { $regex: regex } }).lean()
+    } else {
+      events = await eventModel.find().lean()
+    }
+
     return replaceMongoIdInArray(events)
   } catch (error) {
     console.error("Error fetching events:", error)
