@@ -1,17 +1,22 @@
 import Image from "next/image";
 import ActionButtons from "../ActionButtons";
 import HeroImage from "../../public/events/google-io-2023-1.png";
+import { generateBlurData } from "@/utils/blur-generator";
 
-export default function HeroSection({ event }) {
+export default async function HeroSection({ event }) {
+  const { base64 } = await generateBlurData(event?.imageUrl);
+
   return (
     <section className="container">
       <div className="bg-gradient-to-b from-slate-200/20 to-slate-800/30">
         <Image
-          src={event.imageUrl}
+          src={event?.imageUrl}
           alt={event.name}
           className="h-[450px] mx-auto"
           width={1200}
           height={450}
+          placeholder="blur"
+          blurDataURL={base64}
         />
       </div>
 

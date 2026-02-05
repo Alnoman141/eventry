@@ -1,6 +1,7 @@
 import EventList from "@/components/landing/EventList"
 import Header from "@/components/landing/Header"
-import Image from "next/image"
+import Loading from "@/components/Loading"
+import { Suspense } from "react"
 
 export default async function Home({ searchParams }) {
   const { query } = await searchParams || {}
@@ -8,7 +9,9 @@ export default async function Home({ searchParams }) {
     <div>
       <section className="container">
         <Header />
-        <EventList query={query} />
+        <Suspense key={query} fallback={<Loading />}>
+          <EventList query={query} />
+        </Suspense>
       </section>
     </div>
   )
